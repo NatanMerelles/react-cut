@@ -1,22 +1,23 @@
 import logo from './logo.svg';
 import './App.css';
+import { useState, useRef, useEffect } from 'react';
+import { ReactCut } from './components';
 
 function App() {
+  const [path, setPath] = useState('')
+  const childRef = useRef();
+
+  useEffect(() => {
+    console.log(childRef)
+  }, [childRef])
+
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <ReactCut ref={childRef} onCutFinish={(value) => setPath(value)}>
+          <img draggable="false" src="/download.jpg" style={{ clipPath: `polygon(${path})` }} />
+        </ReactCut>
       </header>
     </div>
   );
