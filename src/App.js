@@ -5,19 +5,17 @@ import { ReactCut } from './components';
 
 function App() {
   const [path, setPath] = useState('')
-  const childRef = useRef();
+  const childRef = useRef({});
 
-  useEffect(() => {
-    console.log(childRef)
-  }, [childRef])
-
+  const onCutFinish = (value) => setPath(value);
 
   return (
     <div className="App">
       <header className="App-header">
-        <ReactCut ref={childRef} onCutFinish={(value) => setPath(value)}>
-          <img draggable="false" src="/download.jpg" style={{ clipPath: `polygon(${path})` }} />
+        <ReactCut ref={childRef} onCutFinish={onCutFinish}>
+          <img draggable="false" src="/download.jpg" style={path ? { clipPath: `polygon(${path})` } : {}} />
         </ReactCut>
+        <button onClick={childRef.current.resetPoints}>reset</button>
       </header>
     </div>
   );

@@ -1,8 +1,7 @@
-import React, { useState, forwardRef, useImperativeHandle, useRef, useEffect } from 'react';
+import React, { useState, forwardRef, useImperativeHandle, useRef, memo } from 'react';
 
-const MoveablePointer = ({ style, parentNode, mousePosition, currentPosition, handlePositionChange }) => {
+const MoveablePointer = memo(({ parentNode, currentPosition }) => {
   const [position, setPosition] = useState(currentPosition);
-  console.log(parentNode)
 
   const mouseMoveEvent = (e) => {
     const { left, top } = e.currentTarget.getBoundingClientRect();
@@ -36,12 +35,30 @@ const MoveablePointer = ({ style, parentNode, mousePosition, currentPosition, ha
         top: position.y
       }} />
   );
-}
+});
 
 const ReactCut = forwardRef(({ children, onCutFinish }, ref) => {
   const [points, setPoints] = useState([]);
   const [active, setActive] = useState(false);
   const containerRef = useRef();
+
+  const handleOnMouseMove = (e) => {
+    if (active) {
+      const { left, top, width, height } = e.currentTarget.getBoundingClientRect()
+
+      const x = (e.pageX - left);
+      const y = (e.pageY - top);
+      const percX = x * 100 / width;
+      const percY = y * 100 / height;
+
+      setPoints([...points, { x, y, percX, percY }]);
+    }
+  }
+
+  const handleOnCutFinish = () => {
+    setActive(false)
+    onCutFinish(points.map(point => `${point.percX}% ${point.percY}%`).toString());
+  }
 
   useImperativeHandle(ref, () => ({
     addPoint: () => {
@@ -52,36 +69,20 @@ const ReactCut = forwardRef(({ children, onCutFinish }, ref) => {
       setPoints([...points, { x, y }]);
     },
 
-    addFigure: (type) => { }
-  }))
+    resetPoints: () => {
+      setPoints([]);
+      onCutFinish('');
+    }
+  }), [onCutFinish])
 
   return (
     <div
       ref={containerRef}
       style={{ position: 'relative' }}
-      onMouseDown={() => {
-        setActive(true);
-      }}
-      onMouseLeave={() => {
-        setActive(false)
-        onCutFinish(points.map(point => `${point.percX}% ${point.percY}%`).toString());
-      }}
-      onMouseUp={() => {
-        setActive(false)
-        onCutFinish(points.map(point => `${point.percX}% ${point.percY}%`).toString());
-      }}
-      onMouseMove={(e) => {
-        if (active) {
-          const { left, top, width, height } = e.currentTarget.getBoundingClientRect()
-
-          const x = (e.pageX - left);
-          const y = (e.pageY - top);
-          const percX = x * 100 / width;
-          const percY = y * 100 / height;
-          console.log(x, y, percX, percY)
-          setPoints([...points, { x, y, percX, percY }]);
-        }
-      }}
+      onMouseDown={() => setActive(true)}
+      onMouseLeave={handleOnCutFinish}
+      onMouseUp={handleOnCutFinish}
+      onMouseMove={handleOnMouseMove}
     >
       {
         points.map(point => (

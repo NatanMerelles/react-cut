@@ -1,4 +1,4 @@
-# Getting Started with Create React App
+# React Cut
 
 A click and move react cut.
 
